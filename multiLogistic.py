@@ -7,25 +7,45 @@ import time
 
 
 class LogisticRegressionOVR(object):
-    def __init__(self, eta=0.1, n_iter=50):
-        self.eta = eta
-        self.n_iter = n_iter
+    def __init__(self):
+        pass
 
-    def fit(self, X, y):
-        X = np.insert(X, 0, 1, axis=1)
-        self.w = []
-        m = X.shape[0]
+    def softmax_fit(self, X, y, W, lr = 0.01, nepoches = 100, tol = 1e-5, batch_size = 10):
+    W_old = W.copy()
+    ep = 0 
+    loss_hist = [self._softmax_loss(X, y, W)] # store history of loss 
+    N = X.shape[0]
+    nbatches = int(np.ceil(float(N)/batch_size))
+    while ep < nepoches: 
+        ep += 1 
+        mix_ids = np.random.permutation(N) # mix data 
+        for i in range(nbatches):
+            # get the i-th batch
+            batch_ids = mix_ids[batch_size*i:min(batch_size*(i+1), N)] 
+            X_batch, y_batch = X[batch_ids], y[batch_ids]
+            W -= lr*softmax_grad(X_batch, y_batch, W) # update gradient descent # TODO
+        loss_hist.append(self._softmax_loss(X, y, W))
+        if np.linalg.norm(W - W_old)/W.size < tol:
+            break 
+        W_old = W.copy()
+    return W, loss_hist 
 
-        for i in np.unique(y):
-            y_copy = np.where(y == i, 1, 0)
-            w = np.ones(X.shape[1])
 
-            for _ in range(self.n_iter):
-                z = X.dot(w)
-                errors = y_copy - self._softmax(z)
-                w += self.eta / m * errors.dot(X)
-            self.w.append((w, i))
-        return self
+    # def fit(self, X, y):
+    #     X = np.insert(X, 0, 1, axis=1)
+    #     self.w = []
+    #     m = X.shape[0]
+
+    #     for i in np.unique(y):
+    #         y_copy = np.where(y == i, 1, 0)
+    #         w = np.ones(X.shape[1])
+
+    #         for _ in range(self.n_iter):
+    #             z = X.dot(w)
+    #             errors = y_copy - self._softmax(z)
+    #             w += self.eta / m * errors.dot(X)
+    #         self.w.append((w, i))
+    #     return self
 
     def _predict_one(self, x):
         return max((x.dot(w), c) for w, c in self.w)[1]
@@ -51,10 +71,14 @@ class LogisticRegressionOVR(object):
         dist = e / np.sum(e, axis=1, keepdims=True)
         return dist
     def _softmax_grad(self,X,y,w):
-        A = softmax(X.dot(y))
+        A = self._softmax(X.dot(y))
         getFir = range(X.shape[0])
         A[getFir,y] -= 1
         return X.T.dot(A) / X.shape[0]
+    def _softmax_loss(self,X,y,w):
+        A = self._softmax(X.dot(y))
+        get0 = range(X.shape[0])
+        return -np.mean(np.log(A[get0, y])) 
 
 
 def exportCSV(test_labels, pred_labels):

@@ -19,7 +19,7 @@ class KNeighborsClassifier(object):
         return self
 
     def _distance(self, data1, data2):
-        """1: Manhattan, 2: Euclidean"""
+        """1: Manhattan, 2: Euclidean"""    
         if self.p == 1:
             return sum(abs(data1 - data2))          
         elif self.p == 2:

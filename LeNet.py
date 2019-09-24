@@ -1,8 +1,6 @@
 # coding: utf-8
 
 
-# 先对MNIST数据集进行读入以及处理
-# 数据从MNIST官网直接下载
 import numpy as np
 import matplotlib.pyplot as plt
 from struct import unpack
@@ -61,18 +59,20 @@ def dataset_loader():
     with h5py.File('./data/test/labels_testing_2000.h5','r') as H:
         test_label = np.copy(H['labeltest'])
 
+    print(train_label.shape)
+
     train_image = np.reshape(train_image, (30000,28, 28,1))
-    test_image = np.reshape(test_image, (30000,28, 28,1))
+    test_image = np.reshape(test_image, (10000,28, 28,1))
 
     train_image = normalize_image(train_image)
     train_label = one_hot_label(train_label)
     train_label = train_label.reshape(train_label.shape[0], train_label.shape[1], 1)
 
-    test_image = normalize_image(test_image)
+    # test_image = normalize_image(test_image)
     test_label = one_hot_label(test_label)
     test_label = test_label.reshape(test_label.shape[0], test_label.shape[1], 1)
     
-    return train_image[0:6000], train_label[0:6000], test_image[0:1000], test_label[0:1000]
+    return train_image[0:3000], train_label[0:3000], test_image[0:5000], test_label[0:5000]
 
 
 
@@ -247,7 +247,6 @@ def add_bias(conv, bias):
     return conv
 
 
-# In[32]:
 
 
 class ConvNet(object):
@@ -261,7 +260,7 @@ class ConvNet(object):
         self.filters.append(np.random.randn(16, 5, 5, 6)) #图像变成 10*10*16 池化后变成5*5*16
         self.filters_biases.append(np.random.randn(16,1))
         
-        self.weights = [np.random.randn(120,400)]
+        self.weights = [np.random.randn(120,256)]
         self.weights.append(np.random.randn(84,120))
         self.weights.append(np.random.randn(10,84))
         self.biases = [np.random.randn(120,1)]
