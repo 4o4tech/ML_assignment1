@@ -5,6 +5,13 @@ import operator
 import pandas as pd
 import time
 
+'''
+KNN algorithm for minst fashion classification
+
+
+Create by Jimze  2019/9/??
+
+'''
 
 
 with h5py.File('./data/train/images_training.h5','r') as H:
@@ -49,7 +56,7 @@ def knn_classify(test_data, train_data, labels,k):
 	for i_data in train_data:
 
 		d = d_euc(test_data, i_data) # 特麻烦一个个 比较距离， cry again
-		distances = np.append(distances, d)
+		distances = np.append(distances, d) # collect each distance, ranking min later
 
 	sorted_distance_index = distances.argsort() # get the  after sort index	
 	sorted_distance = np.sort(distances)
@@ -66,7 +73,9 @@ def knn_classify(test_data, train_data, labels,k):
 
 
 def get_accuracy(test_labels, pred_labels):
-    # 准确率计算函数	
+    '''
+    	准确率计算函数
+    '''	
     correct = np.sum(test_labels == pred_labels)  # 计算预测正确的数据个数
     n = len(test_labels)  # 总测试集数据个数
     accur = correct/n
@@ -74,14 +83,19 @@ def get_accuracy(test_labels, pred_labels):
 
 
 def exportCSV(test_labels, pred_labels, accur):
-	
+	'''
+		export predict data into csv file, 
+		做个记录 
+	'''
 	df = pd.DataFrame({"test_labels" :test_labels , "pred_labels" : pred_labels,"Accuracy":accur})
 	df.to_csv("kNNExportResult" + str(time.time()) +".csv", index=False)
 	# numpy.savetxt("foo.csv", test_labels, delimiter=",")
 
 
 def svd_pca(data, k):
-	"""Reduce DATA using its K principal components."""
+	"""
+	Reduce DATA using its K principal components.
+	"""
 	data = data.astype("float64")
 	data -= np.mean(data, axis=0)
 	U, S, V = np.linalg.svd(data, full_matrices=False)
