@@ -4,30 +4,32 @@ import os
 import operator
 import pandas as pd
 import time
+from tqdm import tqdm 
+import matplotlib as plt
 
-
-class LogisticRegressionOVR(object):
+class SoftmaxRegression(object):
     def __init__(self):
         pass
 
-    def softmax_fit(self, X, y, W, lr = 0.01, nepoches = 100, tol = 1e-5, batch_size = 10):
+    def softmax_fit(self, X, y, W, lr = 0.1, n_iter = 100, tol = 1e-5, batch_size = 20):
         W_old = W.copy()
-        ep = 0 
         loss_hist = [self._softmax_loss(X, y, W)] # store history of loss 
-        N = X.shape[0]
-        nbatches = int(np.ceil(float(N)/batch_size))
-        while ep < nepoches: 
-            ep += 1 
-            mix_ids = np.random.permutation(N) # mix data 
+        dims = X.shape[0]
+        nbatches = int(np.ceil(float(dims)/batch_size))
+
+        for niter in tqdm(range(n_iter)):
+
+            mix_ids = np.random.permutation(dims) # mix data 
             for i in range(nbatches):
                 # get the i-th batch
-                batch_ids = mix_ids[batch_size*i:min(batch_size*(i+1), N)] 
-                X_batch, y_batch = X[batch_ids], y[batch_ids]
-                W -= lr*self._softmax_grad(X_batch, y_batch, W) 
+                batch_ids = mix_ids[batch_size*i:min(batch_size*(i+1), dims)] 
+                X_min_batch, y_min_batch = X[batch_ids], y[batch_ids]
+                W -= lr*self._softmax_grad(X_min_batch, y_min_batch, W) 
             loss_hist.append(self._softmax_loss(X, y, W))
             if np.linalg.norm(W - W_old)/W.size < tol:
                 break 
             W_old = W.copy()
+
         return W, loss_hist 
 
 
@@ -60,13 +62,11 @@ class LogisticRegressionOVR(object):
         return 1 if np.sum(x) > 0 else 0
     
     def _softmax_grad(self,X,y,w):
-        A = softmax(X.dot(w))
-        getFir = range(X.shape[0])
-        A[getFir,y] -= 1
-        return X.T.dot(A) / X.shape[0]
-        A = softmax(X.dot(y))
-        get0 = range(X.shape[0])
-        return -np.mean(np.log(A[get0, y]))
+        hx = softmax(X.dot(w))
+        getLen = range(X.shape[0])
+        hx[getLen,y] -= 1
+        return X.T.dot(hx) / X.shape[0]
+      
     def _softmax_loss(self,X, y, W):
         A = softmax(X.dot(W))
         id0 = range(X.shape[0])
@@ -78,6 +78,10 @@ def softmax(weighted_input):
         e = np.exp(weighted_input)
         dist = e / np.sum(e, axis=1, keepdims=True)
         return dist
+
+def stable_softmax(X):
+    exps = np.exp(X - np.max(X))
+    return exps / np.sum(exps)
 
 def pred(W, X):
     A = softmax(X.dot(W))
@@ -101,7 +105,8 @@ def get_accuracy(test_labels, predi_labels):
 
 # def predi(W,X):
 #     return softmax(X.dot(W))
-    
+
+
 
 
 def main():
@@ -117,27 +122,28 @@ def main():
         label_test = np.copy(H['labeltest'])
 
     classNum = 10
-    train_data = data_train[0:15000]
-    train_label = label_train[0:15000]
+    # train_data = data_train[0:30000]
+    # train_label = label_train[0:30000]
 
-    data_test_slice = data_test[0:2000] # just using smalle sclice of test data
-    label_test_slice = label_test[0:2000] 
+    data_test = data_test[0:2000] # just using smalle sclice of test data
+    # label_test_slice = label_test[0:2000] 
 
-    w_init = np.random.randn(train_data.shape[1], classNum)
+    w_init = np.random.randn(data_train.shape[1], classNum)
 
-    W, loss_hist= LogisticRegressionOVR().softmax_fit(train_data, train_label,w_init,batch_size=10, nepoches=250)
+    W, loss_hist= SoftmaxRegression().softmax_fit(data_train, label_train, w_init, n_iter=100, batch_size=20)
 
-    predi_labels = pred(W,data_test_slice)
+    predi_labels = pred(W,data_test)
 
     # print(predi_labels)
 
-    accuracy = get_accuracy(label_test_slice, predi_labels)
+    accuracy = get_accuracy(label_test, predi_labels)
 
 
     # accuracy, pred_labels = logi.score(test_data,test_label)
     print(" Accuracy: %f"%accuracy)
 
-    exportCSV(label_test_slice, predi_labels,accuracy,loss_hist)
+    exportCSV(label_test, predi_labels,accuracy,loss_hist)
+
 
     
 
