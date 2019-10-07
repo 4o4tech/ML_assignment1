@@ -5,15 +5,17 @@ import operator
 import pandas as pd
 import time
 from tqdm import tqdm 
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 class SoftmaxRegression(object):
     def __init__(self):
         pass
 
-    def softmax_fit(self, X, y, W, lr = 0.1, n_iter = 100, tol = 1e-5, batch_size = 20):
+    def softmax_fit(self, X, y,t_X,t_y, W, lr = 0.1, n_iter = 100, tol = 1e-8, batch_size = 20):
         W_old = W.copy()
         loss_hist = [self._softmax_loss(X, y, W)] # store history of loss 
+
+        vali_loss_hist = [self._softmax_loss(t_X, t_y, W)]
         dims = X.shape[0]
         nbatches = int(np.ceil(float(dims)/batch_size))
 
@@ -26,11 +28,13 @@ class SoftmaxRegression(object):
                 X_min_batch, y_min_batch = X[batch_ids], y[batch_ids]
                 W -= lr*self._softmax_grad(X_min_batch, y_min_batch, W) 
             loss_hist.append(self._softmax_loss(X, y, W))
-            if np.linalg.norm(W - W_old)/W.size < tol:
+            vali_loss_hist.append(self._softmax_loss(t_X, t_y, W))
+
+            if np.linalg.norm((W - W_old),2)/W.size < tol:
                 break 
             W_old = W.copy()
 
-        return W, loss_hist 
+        return W, loss_hist, vali_loss_hist
 
 
     # def fit(self, X, y):
@@ -103,6 +107,14 @@ def get_accuracy(test_labels, predi_labels):
     accur = correct/n
     return accur
 
+
+def draw_loss(loss_hist):
+    plt.plot(loss_hist)
+    plt.xlabel('Number of n_iteration', fontsize = 16)
+    plt.ylabel('Lost', fontsize = 16)
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.show() 
+
 # def predi(W,X):
 #     return softmax(X.dot(W))
 
@@ -130,7 +142,7 @@ def main():
 
     w_init = np.random.randn(data_train.shape[1], classNum)
 
-    W, loss_hist= SoftmaxRegression().softmax_fit(data_train, label_train, w_init, n_iter=500, batch_size=20)
+    W, loss_hist, vali_loss_hist= SoftmaxRegression().softmax_fit(data_train, label_train,data_test,label_test, w_init, n_iter=500, batch_size=20)
 
     predi_labels = pred(W,data_test)
 
@@ -142,7 +154,20 @@ def main():
     # accuracy, pred_labels = logi.score(test_data,test_label)
     print(" Accuracy: %f"%accuracy)
 
-    exportCSV(label_test, predi_labels,accuracy,loss_hist)
+
+    train_predi_labels = pred(W,data_train[0:2000])
+
+    # print(predi_labels)
+
+    train_accuracy = get_accuracy(label_train[0:2000], train_predi_labels)
+
+
+    # accuracy, pred_labels = logi.score(test_data,test_label)
+    print(" Train Data Accuracy: %f"%train_accuracy)
+
+    draw_loss(vali_loss_hist)
+
+    # exportCSV(label_test, predi_labels,accuracy,loss_hist)                  
 
 
     
