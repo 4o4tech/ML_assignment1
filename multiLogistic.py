@@ -130,7 +130,7 @@ def main():
 
     w_init = np.random.randn(data_train.shape[1], classNum)
 
-    W, loss_hist= SoftmaxRegression().softmax_fit(data_train, label_train, w_init, n_iter=100, batch_size=20)
+    W, loss_hist= SoftmaxRegression().softmax_fit(data_train, label_train, w_init, n_iter=500, batch_size=20)
 
     predi_labels = pred(W,data_test)
 

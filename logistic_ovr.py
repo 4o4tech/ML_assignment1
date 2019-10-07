@@ -89,6 +89,25 @@ def main():
 
     print(" Accuracy: %f"%accuracy)
 
+
+
+
+    # train_data2 = data_train[20000:]   
+    # d=np.array(train_data2) 
+
+    # train_data2 = label_train[20000:]
+
+    # W_2, loss_hist_2= SoftmaxRegression().softmax_fit(d, train_data2, W, n_iter=200, batch_size=20)
+
+    # predi_labels_2 = pred(W_2,data_test)
+
+    # accuracy = get_accuracy(label_test, predi_labels_2)
+    # print(" Accuracy 2: %f"%accuracy)
+
+    # exportCSV(label_test, predi_labels,accuracy,loss_hist)
+
+    
+
     # print(logi.score(test_data, test_labels))
     # pred_labels = logi.predict(test_data)
 

@@ -14,16 +14,16 @@ Create by Jimze  2019/9/??
 '''
 
 
-with h5py.File('./data/train/images_training.h5','r') as H:
-    data_train = np.copy(H['datatrain'])
+with h5py.File('./data/train/images_compress_5dims.h5','r') as H:
+	data_train = np.copy(H['compress_datatest'])
 with h5py.File('./data/train/labels_training.h5','r') as H:
-    label_train = np.copy(H['labeltrain'])
+	label_train = np.copy(H['labeltrain'])
 
 # using H['datatest'], H['labeltest'] for test dataset.
 with h5py.File('./data/test/images_testing.h5','r') as H:
-    data_test = np.copy(H['datatest'])
+	data_test = np.copy(H['datatest'])
 with h5py.File('./data/test/labels_testing_2000.h5','r') as H:
-    label_test = np.copy(H['labeltest'])
+	label_test = np.copy(H['labeltest'])
 
 
 # using H['datatest'], H['labeltest'] for test dataset.
@@ -32,8 +32,8 @@ with h5py.File('./data/test/labels_testing_2000.h5','r') as H:
 
 # 欧拉距离公式
 def d_euc(x, y):
-    d = np.sqrt(np.sum(np.square(x - y)))
-    return d
+	d = np.sqrt(np.sum(np.square(x - y)))
+	return d
 
 
 # vote the most  probabolity
@@ -58,7 +58,7 @@ def knn_classify(test_data, train_data, labels,k):
 		d = d_euc(test_data, i_data) # 特麻烦一个个 比较距离， cry again
 		distances = np.append(distances, d) # collect each distance, ranking min later
 
-	sorted_distance_index = distances.argsort() # get the  after sort index	
+	sorted_distance_index = distances.argsort() # get the  after sort index 
 	sorted_distance = np.sort(distances)
 	r = (sorted_distance[k] + sorted_distance[k-1])/2
 
@@ -72,14 +72,14 @@ def knn_classify(test_data, train_data, labels,k):
 	return final_label[0][0], r
 
 
-def get_accuracy(test_labels, pred_labels):
-    '''
-    	准确率计算函数
-    '''	
-    correct = np.sum(test_labels == pred_labels)  # 计算预测正确的数据个数
-    n = len(test_labels)  # 总测试集数据个数
-    accur = correct/n
-    return accur
+def KNN_get_accuracy(test_labels, pred_labels):
+	'''
+		准确率计算函数
+	''' 
+	correct = np.sum(test_labels == pred_labels)  # 计算预测正确的数据个数
+	n = len(test_labels)  # 总测试集数据个数
+	accur = correct/n
+	return accur
 
 
 def exportCSV(test_labels, pred_labels, accur):
@@ -92,14 +92,14 @@ def exportCSV(test_labels, pred_labels, accur):
 	# numpy.savetxt("foo.csv", test_labels, delimiter=",")
 
 
-def svd_pca(data, k):
-	"""
-	Reduce DATA using its K principal components.
-	"""
-	data = data.astype("float64")
-	data -= np.mean(data, axis=0)
-	U, S, V = np.linalg.svd(data, full_matrices=False)
-	return U[:,:k].dot(np.diag(S)[:k,:k])
+# def svd_pca(data, k):
+#   """
+#   Reduce DATA using its K principal components.
+#   """
+#   data = data.astype("float64")
+#   data -= np.mean(data, axis=0)
+#   U, S, V = np.linalg.svd(data, full_matrices=False)
+#   return U[:,:k].dot(np.diag(S)[:k,:k])
 
 def main():
 	
@@ -121,9 +121,9 @@ def main():
 
 	# print(pred_labels)
 	# print(test_label)
-	accuracy = get_accuracy(test_labels,pred_labels)
+	accuracy = KNN_get_accuracy(test_labels,pred_labels)
 
-	exportCSV(test_labels, pred_labels, accuracy)
+	# exportCSV(test_labels, pred_labels, accuracy)
 
 	print(" Accuracy: %f"%accuracy)
 
